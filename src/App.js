@@ -1,25 +1,56 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useRef } from 'react';
 
-function App() {
+import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
+import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
+import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
+
+function Todolist() {
+  const [todo, setTodo] = useState({description: '', date: '', priority:''});
+  const [todos, setTodos] = useState([]);
+  const gridRef = useRef();
+
+  const inputChanged = (event) => {
+    setTodo({...todo, [event.target.name]: event.target.value});
+  }
+
+  const addTodo = (event) => {
+    setTodos([...todos, todo]);
+  }
+
+  const deleteTodo = () => {
+    if (gridRef.current.getSelectedNodes().length > 0) {setTodos(todos.filter((todo, index) => index !== gridRef.current.getSelectedNodes()[0].childIndex))}
+      else{
+      alert('Select row first');
+      }
+    }
+
+  const columns = [
+    {headerName: 'Description', field: 'description', sortable: true, filter: true, floatingFilter: true},
+    {headerName: 'Date', field: 'date', sortable: true, filter: true, floatingFilter: true},
+    {headerName: 'Priority', field: 'priority', sortable: true, filter: true, floatingFilter: true,
+    cellStyle: params => params.value === "High" ? {color: 'red'} : {color: 'black'}},
+  ]
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+    <div style={{width: '610px', height: '700px', margin: 'auto'}}>
+      <input type="text" onChange={inputChanged} placeholder="Description" name="description" value={todo.description}/>
+      <input type="date" onChange={inputChanged} placeholder="Date" name="date" value={todo.date}/>
+      <input type="text" onChange={inputChanged} placeholder="Priority" name="priority" value={todo.priority}/>
+      <button onClick={addTodo}>Add</button>
+      <button onClick={deleteTodo}>Delete</button>
+      <div className="ag-theme-material" style={{width: '610px', height: '700px', margin: 'auto'}}>
+        <AgGridReact
+        animateRows='true'
+        ref={gridRef}
+        onGridReady={ params => gridRef.current = params.api }
+        rowSelection="single"
+        columnDefs={columns}
+        rowData={todos}
         >
-          Learn React
-        </a>
-      </header>
+        </AgGridReact>
+      </div>
     </div>
   );
-}
+};
 
-export default App;
+export default Todolist;
